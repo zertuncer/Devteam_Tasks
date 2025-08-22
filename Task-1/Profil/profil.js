@@ -5,7 +5,11 @@ class Person {
 
   constructor(name, age) {
     this.name = name;
-    this.#age = age; // setter üzerinden doğrula
+    if (!Number.isInteger(age) || age < 0 || age > 100) {
+      console.log("Uyarı: Yaş 0-100 arasında bir tam sayı olmalıdır.");
+      process.exit();
+    }
+    this.#age = age;
     Person.classnameCount++; // instance oluşturulduğunda sayacı artır
   }
 
@@ -65,7 +69,7 @@ class Instructor extends Person {
       }
 }
 
-const p1 = new Person("Ali", 23);
+const p1 = new Person("Ali", -1);
 const s1 = new Student("Bahadır", 21, 123456);
 const s2 = new Student("Elif", 20, 123457);
 const i1 = new Instructor("Ahmet", 30, "Matematik");
