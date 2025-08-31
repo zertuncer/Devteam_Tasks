@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo API Test Sayfası</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffd43b 0%, #fcc419 100%);
+            color: #333;
+        }
+        
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .response.success {
+            border-left-color: #51cf66;
+            background: #f4fce3;
+        }
+        
+        .response.error {
+            border-left-color: #ff6b6b;
+            background: #fff5f5;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .user-id-display {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .todo-id-display {
+            background: #f3e5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Todo API Test Sayfası</h1>
+            <p>Express.js REST API'nizi test edin</p>
+        </div>
+        
+        <div class="content">
+            <!-- User Section -->
+            <div class="section">
+                <h2>👤 User İşlemleri</h2>
+                
+                <div class="grid">
+                    <!-- Create User -->
+                    <div>
+                        <h3>Yeni Kullanıcı Oluştur</h3>
+                        <form id="createUserForm">
+                            <div class="form-group">
+                                <label for="username">Username:</label>
+                                <input type="text" id="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="password" id="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Kullanıcı Oluştur</button>
+                        </form>
+                        <div id="createUserResponse" class="response" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- Get Users -->
+                    <div>
+                        <h3>Kullanıcıları Listele</h3>
+                        <button onclick="getAllUsers()" class="btn">Tüm Kullanıcıları Getir</button>
+                        <div id="getUsersResponse" class="response" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <!-- User ID Display -->
+                <div id="userIdDisplay" class="user-id-display" style="display: none;">
+                    Son Oluşturulan Kullanıcı ID: <span id="currentUserId"></span>
+                </div>
+            </div>
+            
+            <!-- Todo Section -->
+            <div class="section">
+                <h2>✅ Todo İşlemleri</h2>
+                
+                <div class="grid">
+                    <!-- Create Todo -->
+                    <div>
+                        <h3>Yeni Todo Oluştur</h3>
+                        <form id="createTodoForm">
+                            <div class="form-group">
+                                <label for="todoTitle">Başlık:</label>
+                                <input type="text" id="todoTitle" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="todoDescription">Açıklama:</label>
+                                <textarea id="todoDescription" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="todoUserId">Kullanıcı ID:</label>
+                                <input type="text" id="todoUserId" placeholder="UUID formatında" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Todo Oluştur</button>
+                        </form>
+                        <div id="createTodoResponse" class="response" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- Get Todos -->
+                    <div>
+                        <h3>Todoları Listele</h3>
+                        <button onclick="getAllTodos()" class="btn">Tüm Todoları Getir</button>
+                        <button onclick="getTodosByCompleted(true)" class="btn btn-warning">Tamamlananlar</button>
+                        <button onclick="getTodosByCompleted(false)" class="btn">Tamamlanmayanlar</button>
+                        <div class="form-group">
+                            <label for="searchQuery">Arama:</label>
+                            <input type="text" id="searchQuery" placeholder="Arama terimi...">
+                            <button onclick="searchTodos()" class="btn">Ara</button>
+                        </div>
+                        <div id="getTodosResponse" class="response" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <!-- Todo ID Display -->
+                <div id="todoIdDisplay" class="todo-id-display" style="display: none;">
+                    Son Oluşturulan Todo ID: <span id="currentTodoId"></span>
+                </div>
+            </div>
+            
+            <!-- Update/Delete Section -->
+            <div class="section">
+                <h2>🔄 Güncelleme ve Silme</h2>
+                
+                <div class="grid">
+                    <!-- Update Todo -->
+                    <div>
+                        <h3>Todo Güncelle</h3>
+                        <div class="form-group">
+                            <label for="updateTodoId">Todo ID:</label>
+                            <input type="text" id="updateTodoId" placeholder="UUID formatında">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateTitle">Yeni Başlık:</label>
+                            <input type="text" id="updateTitle">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateDescription">Yeni Açıklama:</label>
+                            <textarea id="updateDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="updateCompleted">Tamamlandı:</label>
+                            <select id="updateCompleted">
+                                <option value="">Seçiniz</option>
+                                <option value="true">Evet</option>
+                                <option value="false">Hayır</option>
+                            </select>
+                        </div>
+                        <button onclick="updateTodo()" class="btn btn-warning">Tam Güncelle (PUT)</button>
+                        <button onclick="patchTodo()" class="btn">Kısmi Güncelle (PATCH)</button>
+                        <div id="updateTodoResponse" class="response" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- Delete Todo -->
+                    <div>
+                        <h3>Todo Sil</h3>
+                        <div class="form-group">
+                            <label for="deleteTodoId">Todo ID:</label>
+                            <input type="text" id="deleteTodoId" placeholder="UUID formatında">
+                        </div>
+                        <button onclick="deleteTodo()" class="btn btn-danger">Todo Sil</button>
+                        <div id="deleteTodoResponse" class="response" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Todos Section -->
+            <div class="section">
+                <h2>👤 Kullanıcı Todoları</h2>
+                <div class="form-group">
+                    <label for="userTodosId">Kullanıcı ID:</label>
+                    <input type="text" id="userTodosId" placeholder="UUID formatında">
+                </div>
+                <button onclick="getUserTodos()" class="btn">Kullanıcının Todolarını Getir</button>
+                <div id="getUserTodosResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        
+        // Helper function to show response
+        function showResponse(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `response ${isError ? 'error' : 'success'}`;
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        // Helper function to hide response
+        function hideResponse(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+        
+        // Create User
+        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideResponse('createUserResponse');
+            
+            const userData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    data = { error: 'Response parsing failed' };
+                }
+                
+                if (response.ok) {
+                    showResponse('createUserResponse', data);
+                    if (data.id) {
+                        document.getElementById('currentUserId').textContent = data.id;
+                        document.getElementById('userIdDisplay').style.display = 'block';
+                        document.getElementById('todoUserId').value = data.id;
+                    }
+                } else {
+                    showResponse('createUserResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('createUserResponse', { error: error.message }, true);
+            }
+        });
+        
+        // Get All Users
+        async function getAllUsers() {
+            hideResponse('getUsersResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('getUsersResponse', data);
+                } else {
+                    showResponse('getUsersResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('getUsersResponse', { error: error.message }, true);
+            }
+        }
+        
+        // Create Todo
+        document.getElementById('createTodoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideResponse('createTodoResponse');
+            
+            const todoData = {
+                title: document.getElementById('todoTitle').value,
+                description: document.getElementById('todoDescription').value,
+                userId: document.getElementById('todoUserId').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/todos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(todoData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('createTodoResponse', data);
+                    document.getElementById('currentTodoId').textContent = data.id;
+                    document.getElementById('todoIdDisplay').style.display = 'block';
+                    document.getElementById('updateTodoId').value = data.id;
+                    document.getElementById('deleteTodoId').value = data.id;
+                } else {
+                    showResponse('createTodoResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('createTodoResponse', { error: error.message }, true);
+            }
+        });
+        
+        // Get All Todos
+        async function getAllTodos() {
+            hideResponse('getTodosResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/todos`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('getTodosResponse', data);
+                } else {
+                    showResponse('getTodosResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('getTodosResponse', { error: error.message }, true);
+            }
+        }
+        
+        // Get Todos by Completed Status
+        async function getTodosByCompleted(completed) {
+            hideResponse('getTodosResponse');
+            
+            try {
+                const response = await fetch(`${API_BASE}/todos?completed=${completed}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('getTodosResponse', data);
+                } else {
+                    showResponse('getTodosResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('getTodosResponse', { error: error.message }, true);
+            }
+        }
+        
+        // Search Todos
+        async function searchTodos() {
+            hideResponse('getTodosResponse');
+            
+            const query = document.getElementById('searchQuery').value;
+            if (!query) {
+                showResponse('getTodosResponse', { error: 'Arama terimi gerekli' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/todos?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('getTodosResponse', data);
+                } else {
+                    showResponse('getTodosResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('getTodosResponse', { error: error.message }, true);
+            }
+        }
+        
+        // Update Todo (PUT)
+        async function updateTodo() {
+            hideResponse('updateTodoResponse');
+            
+            const todoId = document.getElementById('updateTodoId').value;
+            if (!todoId) {
+                showResponse('updateTodoResponse', { error: 'Todo ID gerekli' }, true);
+                return;
+            }
+            
+            const updateData = {
+                title: document.getElementById('updateTitle').value,
+                description: document.getElementById('updateDescription').value,
+                completed: document.getElementById('updateCompleted').value === 'true'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/todos/${todoId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('updateTodoResponse', data);
+                } else {
+                    showResponse('updateTodoResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('updateTodoResponse', { error: error.message }, true);
+            }
+        }
+        
+        // Patch Todo (PATCH)
+        async function patchTodo() {
+            hideResponse('updateTodoResponse');
+            
+            const todoId = document.getElementById('updateTodoId').value;
+            if (!todoId) {
+                showResponse('updateTodoResponse', { error: 'Todo ID gerekli' }, true);
+                return;
+            }
+            
+            const patchData = {};
+            const title = document.getElementById('updateTitle').value;
+            const description = document.getElementById('updateDescription').value;
+            const completed = document.getElementById('updateCompleted').value;
+            
+            if (title) patchData.title = title;
+            if (description) patchData.description = description;
+            if (completed !== '') patchData.completed = completed === 'true';
+            
+            if (Object.keys(patchData).length === 0) {
+                showResponse('updateTodoResponse', { error: 'En az bir alan güncellenmelidir' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/todos/${todoId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(patchData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('updateTodoResponse', data);
+                } else {
+                    showResponse('updateTodoResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('updateTodoResponse', { error: error.message }, true);
+            }
+        }
+        
+        // Delete Todo
+        async function deleteTodo() {
+            hideResponse('deleteTodoResponse');
+            
+            const todoId = document.getElementById('deleteTodoId').value;
+            if (!todoId) {
+                showResponse('deleteTodoResponse', { error: 'Todo ID gerekli' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/todos/${todoId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showResponse('deleteTodoResponse', { message: 'Todo başarıyla silindi' });
+                } else {
+                    const data = await response.json();
+                    showResponse('deleteTodoResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('deleteTodoResponse', { error: error.message }, true);
+            }
+        }
+        
+        // Get User Todos
+        async function getUserTodos() {
+            hideResponse('getUserTodosResponse');
+            
+            const userId = document.getElementById('userTodosId').value;
+            if (!userId) {
+                showResponse('getUserTodosResponse', { error: 'Kullanıcı ID gerekli' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/${userId}/todos`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse('getUserTodosResponse', data);
+                } else {
+                    showResponse('getUserTodosResponse', data, true);
+                }
+            } catch (error) {
+                showResponse('getUserTodosResponse', { error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+</html>
