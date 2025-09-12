@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App - Authentication Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffd43b 0%, #fab005 100%);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .response.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .response.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .token-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status.authenticated {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.unauthenticated {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.admin {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .todo-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .todo-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .todo-actions .btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Todo App API Test</h1>
+            <p>Authentication & Authorization Test Interface</p>
+        </div>
+
+        <div class="content">
+            <!-- Authentication Status -->
+            <div class="section">
+                <h2>🔐 Authentication Status</h2>
+                <div id="authStatus">
+                    <span class="status unauthenticated">Not Authenticated</span>
+                </div>
+                <div id="tokenDisplay" class="token-display" style="display: none;">
+                    <strong>Access Token:</strong><br>
+                    <span id="tokenValue"></span>
+                </div>
+            </div>
+
+            <!-- Authentication Section -->
+            <div class="section">
+                <h2>🔑 Authentication</h2>
+                <div class="grid">
+                    <div>
+                        <h3>Register</h3>
+                        <div class="form-group">
+                            <label>Username:</label>
+                            <input type="text" id="regUsername" placeholder="Enter username">
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="regEmail" placeholder="Enter email">
+                        </div>
+                        <div class="form-group">
+                            <label>Password:</label>
+                            <input type="password" id="regPassword" placeholder="Enter password">
+                        </div>
+                        <button class="btn" onclick="register()">Register</button>
+                    </div>
+
+                    <div>
+                        <h3>Login</h3>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="loginEmail" placeholder="Enter email">
+                        </div>
+                        <div class="form-group">
+                            <label>Password:</label>
+                            <input type="password" id="loginPassword" placeholder="Enter password">
+                        </div>
+                        <button class="btn" onclick="login()">Login</button>
+                        <button class="btn btn-warning" onclick="loginAsAdmin()">Login as Admin</button>
+                        <button class="btn btn-warning" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+                <div id="authResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="section">
+                <h2>👤 Profile</h2>
+                <button class="btn" onclick="getProfile()">Get Profile</button>
+                <div id="profileResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Todo Management -->
+            <div class="section">
+                <h2>📝 Todo Management</h2>
+                <div class="grid">
+                    <div>
+                        <h3>Create Todo</h3>
+                        <div class="form-group">
+                            <label>Title:</label>
+                            <input type="text" id="todoTitle" placeholder="Enter todo title">
+                        </div>
+                        <div class="form-group">
+                            <label>Description:</label>
+                            <textarea id="todoDescription" placeholder="Enter todo description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="todoCompleted"> Completed
+                            </label>
+                        </div>
+                        <button class="btn" onclick="createTodo()">Create Todo</button>
+                    </div>
+
+                    <div>
+                        <h3>Todo Actions</h3>
+                        <button class="btn" onclick="getAllTodos()">Get All Todos</button>
+                        <button class="btn" onclick="getTodoById()">Get Todo by ID</button>
+                        <div class="form-group">
+                            <label>Todo ID:</label>
+                            <input type="text" id="todoId" placeholder="Enter todo ID">
+                        </div>
+                    </div>
+                </div>
+                <div id="todoResponse" class="response" style="display: none;"></div>
+                <div id="todoList"></div>
+            </div>
+
+            <!-- Elevated Authentication -->
+            <div class="section">
+                <h2>🔒 Elevated Authentication</h2>
+                <div class="grid">
+                    <div>
+                        <h3>Request Elevated Token</h3>
+                        <div class="form-group">
+                            <label>Action:</label>
+                            <select id="elevatedAction">
+                                <option value="changeEmail">Change Email</option>
+                                <option value="changePassword">Change Password</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="requestElevatedToken()">Request Token</button>
+                    </div>
+
+                    <div>
+                        <h3>Change Email</h3>
+                        <div class="form-group">
+                            <label>Token:</label>
+                            <input type="text" id="emailToken" placeholder="Enter elevated token">
+                        </div>
+                        <div class="form-group">
+                            <label>New Email:</label>
+                            <input type="email" id="newEmail" placeholder="Enter new email">
+                        </div>
+                        <button class="btn" onclick="changeEmail()">Change Email</button>
+                    </div>
+
+                    <div>
+                        <h3>Change Password</h3>
+                        <div class="form-group">
+                            <label>Token:</label>
+                            <input type="text" id="passwordToken" placeholder="Enter elevated token">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password:</label>
+                            <input type="password" id="newPassword" placeholder="Enter new password">
+                        </div>
+                        <button class="btn" onclick="changePassword()">Change Password</button>
+                    </div>
+                </div>
+                <div id="elevatedResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Admin Section -->
+            <div class="section">
+                <h2>👑 Admin Functions</h2>
+                <div id="adminWarning" style="background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;">
+                    <strong>⚠️ Admin Access Required</strong><br>
+                    You need to login as admin to access these functions. Click "Login as Admin" button above.
+                </div>
+                <button class="btn btn-warning" onclick="getAllUsersWithTodos()">Get All Users & Todos</button>
+                <div id="adminTable" style="display: none; margin-top: 20px;">
+                    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">User</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Email</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Todos</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Completed</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #ddd;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="adminResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let accessToken = localStorage.getItem('accessToken');
+        let isAdmin = false;
+
+        // Update auth status on page load
+        updateAuthStatus();
+
+        function updateAuthStatus() {
+            const authStatus = document.getElementById('authStatus');
+            const tokenDisplay = document.getElementById('tokenDisplay');
+            const tokenValue = document.getElementById('tokenValue');
+            const adminWarning = document.getElementById('adminWarning');
+
+            if (accessToken) {
+                try {
+                    const payload = JSON.parse(atob(accessToken.split('.')[1]));
+                    if (payload.isAdmin) {
+                        authStatus.innerHTML = '<span class="status admin">Admin Authenticated</span>';
+                        isAdmin = true;
+                        adminWarning.style.display = 'none';
+                    } else {
+                        authStatus.innerHTML = '<span class="status authenticated">User Authenticated</span>';
+                        isAdmin = false;
+                        adminWarning.style.display = 'block';
+                    }
+                    tokenDisplay.style.display = 'block';
+                    tokenValue.textContent = accessToken;
+                } catch (e) {
+                    authStatus.innerHTML = '<span class="status unauthenticated">Invalid Token</span>';
+                    tokenDisplay.style.display = 'none';
+                    isAdmin = false;
+                    adminWarning.style.display = 'block';
+                }
+            } else {
+                authStatus.innerHTML = '<span class="status unauthenticated">Not Authenticated</span>';
+                tokenDisplay.style.display = 'none';
+                isAdmin = false;
+                adminWarning.style.display = 'block';
+            }
+        }
+
+        function getHeaders() {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+            return headers;
+        }
+
+        function showResponse(elementId, data, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `response ${type}`;
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: getHeaders()
+                });
+                
+                const data = await response.text();
+                let jsonData;
+                try {
+                    jsonData = JSON.parse(data);
+                } catch (e) {
+                    jsonData = data;
+                }
+
+                if (response.ok) {
+                    showResponse('authResponse', jsonData, 'success');
+                    return jsonData;
+                } else {
+                    showResponse('authResponse', jsonData, 'error');
+                    throw new Error(jsonData.message || 'Request failed');
+                }
+            } catch (error) {
+                showResponse('authResponse', { error: error.message }, 'error');
+                throw error;
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!username || !email || !password) {
+                showResponse('authResponse', { error: 'All fields are required' }, 'error');
+                return;
+            }
+
+            await makeRequest(`${API_BASE}/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({ username, email, password })
+            });
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showResponse('authResponse', { error: 'Email and password are required' }, 'error');
+                return;
+            }
+
+            const response = await makeRequest(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.accessToken) {
+                accessToken = response.accessToken;
+                localStorage.setItem('accessToken', accessToken);
+                updateAuthStatus();
+            }
+        }
+
+        async function loginAsAdmin() {
+            // Admin credentials from .env
+            const adminEmail = 'admin@acm.dev';
+            const adminPassword = 'ChangeMe!';
+
+            document.getElementById('loginEmail').value = adminEmail;
+            document.getElementById('loginPassword').value = adminPassword;
+
+            const response = await makeRequest(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ email: adminEmail, password: adminPassword })
+            });
+
+            if (response.accessToken) {
+                accessToken = response.accessToken;
+                localStorage.setItem('accessToken', accessToken);
+                updateAuthStatus();
+                showResponse('authResponse', { message: 'Logged in as Admin successfully!' }, 'success');
+            }
+        }
+
+        function logout() {
+            accessToken = null;
+            isAdmin = false;
+            localStorage.removeItem('accessToken');
+            updateAuthStatus();
+            showResponse('authResponse', { message: 'Logged out successfully' }, 'success');
+        }
+
+        async function getProfile() {
+            await makeRequest(`${API_BASE}/me`);
+        }
+
+        async function createTodo() {
+            const title = document.getElementById('todoTitle').value;
+            const description = document.getElementById('todoDescription').value;
+            const completed = document.getElementById('todoCompleted').checked;
+
+            if (!title || !description) {
+                showResponse('todoResponse', { error: 'Title and description are required' }, 'error');
+                return;
+            }
+
+            await makeRequest(`${API_BASE}/todos`, {
+                method: 'POST',
+                body: JSON.stringify({ title, description, completed })
+            });
+        }
+
+        async function getAllTodos() {
+            const response = await makeRequest(`${API_BASE}/todos`);
+            displayTodos(response);
+        }
+
+        async function getTodoById() {
+            const todoId = document.getElementById('todoId').value;
+            if (!todoId) {
+                showResponse('todoResponse', { error: 'Todo ID is required' }, 'error');
+                return;
+            }
+
+            await makeRequest(`${API_BASE}/todos/${todoId}`);
+        }
+
+        function displayTodos(todos) {
+            const todoList = document.getElementById('todoList');
+            if (!todos || todos.length === 0) {
+                todoList.innerHTML = '<p>No todos found</p>';
+                return;
+            }
+
+            todoList.innerHTML = todos.map(todo => `
+                <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <div>
+                        <h4>${todo.title}</h4>
+                        <p>${todo.description}</p>
+                        <small>ID: ${todo.id}</small>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="btn btn-success" onclick="updateTodo('${todo.id}')">Update</button>
+                        <button class="btn btn-danger" onclick="deleteTodo('${todo.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateTodo(todoId) {
+            const title = prompt('Enter new title:');
+            const description = prompt('Enter new description:');
+            const completed = confirm('Is this todo completed?');
+
+            if (title && description) {
+                await makeRequest(`${API_BASE}/todos/${todoId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ title, description, completed })
+                });
+            }
+        }
+
+        async function deleteTodo(todoId) {
+            if (confirm('Are you sure you want to delete this todo?')) {
+                await makeRequest(`${API_BASE}/todos/${todoId}`, {
+                    method: 'DELETE'
+                });
+            }
+        }
+
+        async function requestElevatedToken() {
+            const action = document.getElementById('elevatedAction').value;
+            await makeRequest(`${API_BASE}/me/request-elevated-token`, {
+                method: 'POST',
+                body: JSON.stringify({ action })
+            });
+        }
+
+        async function changeEmail() {
+            const token = document.getElementById('emailToken').value;
+            const newEmail = document.getElementById('newEmail').value;
+
+            if (!token || !newEmail) {
+                showResponse('elevatedResponse', { error: 'Token and new email are required' }, 'error');
+                return;
+            }
+
+            await makeRequest(`${API_BASE}/me/change-email/${token}`, {
+                method: 'POST',
+                body: JSON.stringify({ newEmail })
+            });
+        }
+
+        async function changePassword() {
+            const token = document.getElementById('passwordToken').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            if (!token || !newPassword) {
+                showResponse('elevatedResponse', { error: 'Token and new password are required' }, 'error');
+                return;
+            }
+
+            await makeRequest(`${API_BASE}/me/change-password/${token}`, {
+                method: 'POST',
+                body: JSON.stringify({ newPassword })
+            });
+        }
+
+        async function getAllUsersWithTodos() {
+            try {
+                // Check if user is admin
+                if (!isAdmin) {
+                    showResponse('adminResponse', { 
+                        error: 'Admin access required. Please login as admin first.',
+                        hint: 'Click "Login as Admin" button to get admin access'
+                    }, 'error');
+                    return;
+                }
+
+                // Get all users
+                const usersResponse = await fetch(`${API_BASE}/users`, {
+                    headers: getHeaders()
+                });
+                
+                if (!usersResponse.ok) {
+                    const errorData = await usersResponse.json();
+                    if (usersResponse.status === 403) {
+                        showResponse('adminResponse', { 
+                            error: 'Access denied. Admin privileges required.',
+                            hint: 'Make sure you are logged in as admin'
+                        }, 'error');
+                    } else {
+                        showResponse('adminResponse', errorData, 'error');
+                    }
+                    return;
+                }
+                
+                const users = await usersResponse.json();
+                
+                // Get todos for each user
+                const usersWithTodos = await Promise.all(
+                    users.map(async (user) => {
+                        try {
+                            const todosResponse = await fetch(`${API_BASE}/users/${user.id}/todos`, {
+                                headers: getHeaders()
+                            });
+                            
+                            if (todosResponse.ok) {
+                                const todos = await todosResponse.json();
+                                return {
+                                    ...user,
+                                    todos: todos || []
+                                };
+                            } else {
+                                return {
+                                    ...user,
+                                    todos: []
+                                };
+                            }
+                        } catch (error) {
+                            return {
+                                ...user,
+                                todos: []
+                            };
+                        }
+                    })
+                );
+                
+                displayAdminTable(usersWithTodos);
+                showResponse('adminResponse', { message: `Loaded ${usersWithTodos.length} users with their todos` }, 'success');
+                
+            } catch (error) {
+                showResponse('adminResponse', { error: error.message }, 'error');
+            }
+        }
+
+        function displayAdminTable(usersWithTodos) {
+            const adminTable = document.getElementById('adminTable');
+            const adminTableBody = document.getElementById('adminTableBody');
+            
+            adminTable.style.display = 'block';
+            
+            adminTableBody.innerHTML = usersWithTodos.map(user => {
+                const completedTodos = user.todos.filter(todo => todo.completed).length;
+                const totalTodos = user.todos.length;
+                
+                return `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 15px;">
+                            <strong>${user.username}</strong><br>
+                            <small style="color: #666;">ID: ${user.id}</small>
+                        </td>
+                        <td style="padding: 15px;">${user.email}</td>
+                        <td style="padding: 15px;">
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${user.todos.length === 0 ? 
+                                    '<span style="color: #999; font-style: italic;">No todos</span>' :
+                                    user.todos.map(todo => `
+                                        <div style="margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; border-left: 3px solid ${todo.completed ? '#51cf66' : '#ffd43b'};">
+                                            <strong>${todo.title}</strong><br>
+                                            <small style="color: #666;">${todo.description}</small><br>
+                                            <small style="color: #999;">ID: ${todo.id}</small>
+                                        </div>
+                                    `).join('')
+                                }
+                            </div>
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            <span style="background: ${completedTodos === totalTodos && totalTodos > 0 ? '#d4edda' : '#fff3cd'}; color: ${completedTodos === totalTodos && totalTodos > 0 ? '#155724' : '#856404'}; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+                                ${completedTodos}/${totalTodos}
+                            </span>
+                        </td>
+                        <td style="padding: 15px;">
+                            <button class="btn" style="padding: 5px 10px; font-size: 12px; margin: 2px;" onclick="viewUserDetails('${user.id}')">View Details</button>
+                            <button class="btn btn-success" style="padding: 5px 10px; font-size: 12px; margin: 2px;" onclick="viewUserTodos('${user.id}')">View Todos</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function viewUserDetails(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/users/${userId}`, {
+                    headers: getHeaders()
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    showResponse('adminResponse', user, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showResponse('adminResponse', errorData, 'error');
+                }
+            } catch (error) {
+                showResponse('adminResponse', { error: error.message }, 'error');
+            }
+        }
+
+        async function viewUserTodos(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/users/${userId}/todos`, {
+                    headers: getHeaders()
+                });
+                
+                if (response.ok) {
+                    const todos = await response.json();
+                    showResponse('adminResponse', todos, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showResponse('adminResponse', errorData, 'error');
+                }
+            } catch (error) {
+                showResponse('adminResponse', { error: error.message }, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
